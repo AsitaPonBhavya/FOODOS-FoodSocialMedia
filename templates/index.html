@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foodos - Recipe Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script>
+        let searchMode = "ingredients"; // Default search mode
+
+        function toggleSearchMode() {
+            searchMode = searchMode === "ingredients" ? "recipe" : "ingredients";
+            document.getElementById("searchModeText").innerText = 
+                searchMode === "ingredients" ? "Search by Ingredients" : "Search by Recipe Name";
+
+            document.getElementById("searchInput").placeholder = 
+                searchMode === "ingredients" ? "Enter ingredients (comma-separated)" : "Enter recipe name";
+
+            document.getElementById("searchResults").innerHTML = ""; // Clear previous results
+        }
+
+        function searchRecipe() {
+            let query = document.getElementById("searchInput").value.trim().toLowerCase();
+            let resultContainer = document.getElementById("searchResults");
+            let loadingIndicator = document.getElementById("loadingIndicator");
+            resultContainer.innerHTML = ""; // Clear previous results
+
+            if (!query) {
+                resultContainer.innerHTML = "<p>Please enter a search term.</p>";
+                return;
+            }
+
+            let endpoint = searchMode === "ingredients"
+                ? `/search_by_ingredients?ingredients=${encodeURIComponent(query)}`
+                : `/search_by_recipe?query=${encodeURIComponent(query)}`;
+
+            console.log(`Fetching: ${endpoint}`); // Debugging
+
+            loadingIndicator.style.display = "block"; // Show loading indicator
+
+            fetch(endpoint)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loadingIndicator.style.display = "none"; // Hide loading indicator
+                    resultContainer.innerHTML = ""; // Clear previous results
+
+                    if (Array.isArray(data) && data.length > 0) {
+                        resultContainer.innerHTML = `<p><strong>Results Found: ${data.length}</strong></p>`;
+                        data.forEach(recipe => {
+                            let item = document.createElement("div");
+                            item.classList.add("recipe-card");
+
+                            item.innerHTML = `
+                                <h3>${recipe.TranslatedRecipeName || "Unknown Recipe"}</h3>
+                                <p><strong>Cuisine:</strong> ${recipe.Cuisine || "Unknown"}</p>
+                                <img src="${recipe["image-url"] || '/static/default.jpg'}" alt="Recipe Image" class="recipe-image">
+                                <p><strong>Ingredients:</strong> ${recipe["Cleaned-Ingredients"] || "N/A"}</p>
+                                <p><strong>Instructions:</strong> ${recipe.TranslatedInstructions || "N/A"}</p>
+                                <p><strong>Prep Time:</strong> ${recipe.TotalTimeInMins || "N/A"} minutes</p>
+                                <p><a href="${recipe.URL || '#'}" target="_blank">View Full Recipe</a></p>
+                            `;
+                            resultContainer.appendChild(item);
+                        });
+                    } else {
+                        resultContainer.innerHTML = "<p>No results found. Try different keywords.</p>";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error searching recipes:", error);
+                    resultContainer.innerHTML = "<p>Something went wrong. Please try again later.</p>";
+                })
+                .finally(() => {
+                    loadingIndicator.style.display = "none"; // Hide loading spinner after request
+                });
+
+            // Keep the input value after search
+            document.getElementById("searchInput").focus();
+        }
+    </script>
+
+</head>
+<body>
+
+    <header>
+        <h1 class="glow">Foodos</h1>
+        <p class="tagline">"Who Needs a Chef When You Have FoODoS?"</p>
+    </header>
+
+    <nav>
+        <ul class="nav-bar">
+            <li><a href="/dashboard">Home</a></li>
+            <li><a href="/add_recipe">Add Recipe</a></li>
+        </ul>
+    </nav>
+
+    
+
+    <div class="container">
+        <h2>Find Your Next Meal</h2>
+
+        <!-- Toggle Search Mode Button -->
+        <button onclick="toggleSearchMode()">Switch Search Mode</button>
+        <p><strong>Current Mode:</strong> <span id="searchModeText">Search by Ingredients</span></p>
+
+        <!-- Search Input -->
+        <input type="text" id="searchInput" placeholder="Enter ingredients (comma-separated)" onkeydown="if(event.key === 'Enter') searchRecipe()">
+        <button onclick="searchRecipe()">Search</button>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" style="display:none; margin-top: 10px;">
+            <p>Loading...</p>
+        </div>
+
+        <!-- Search Results Section -->
+        <div id="searchResults"></div>
+    </div>
+
+</body>
+</html>

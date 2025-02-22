@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <style>
+        body {
+            background-color: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        .profile-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #111;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
+        }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+        }
+
+        .user-info {
+            margin: 15px 0;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .stats div {
+            background-color: #222;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .follow-btn {
+            background-color: blue;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .input-container {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #222;
+            border-radius: 5px;
+        }
+
+        input[type="file"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .update-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
+        .posts-container {
+            margin-top: 20px;
+        }
+
+        .post {
+            background-color: #222;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .post img {
+            max-width: 100%;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="profile-container">
+        <h1>Profile</h1>
+        
+        <!-- Profile Picture -->
+        <img class="profile-pic" src="{{ url_for('uploaded_profile', filename=profile_pic.split('/')[-1]) }}" alt="Profile Picture">
+    
+        <div class="user-info">
+            <h2>{{ name }}</h2>
+            <p><strong>Username:</strong> {{ username }}</p>
+            <p><strong>Email ID:</strong> {{ email }}</p>
+        </div>
+    
+        <!-- Followers & Following Stats -->
+        <div class="stats">
+            <div>
+                <p><strong>Followers:</strong> {{ followers }}</p>
+            </div>
+            <div>
+                <p><strong>Following:</strong> {{ following }}</p>
+            </div>
+        </div>
+    
+        <!-- Follow/Unfollow Button (Only if viewing another user's profile) -->
+        {% if session["user"] and session["user"] != username %}
+            <form action="{{ url_for('follow_user') }}" method="POST">
+                <input type="hidden" name="username" value="{{ username }}">
+                <button type="submit" class="follow-btn">
+                    {% if is_following %}
+                        Unfollow
+                    {% else %}
+                        Follow
+                    {% endif %}
+                </button>
+            </form>
+        {% endif %}
+    
+        <!-- Only Show These If User is Viewing Their Own Profile -->
+        {% if session["user"] == username %}
+            <!-- Update Email -->
+            <div class="input-container">
+                <form action="/update_email" method="POST">
+                    <input type="text" name="email" placeholder="Enter new email">
+                    <button type="submit" class="update-btn">Update Email</button>
+                </form>
+            </div>
+    
+            <!-- Upload Profile Picture -->
+            <div class="input-container">
+                <form action="/upload_profile_pic" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="profile_pic">
+                    <button type="submit" class="update-btn">Upload</button>
+                </form>
+            </div>
+        {% endif %}
+    
+        <!-- User Posts -->
+        <div class="posts-container">
+            <h2>Posts</h2>
+            {% if user_posts %}
+                {% for post in user_posts %}
+                    <div class="post">
+                        {% if post['Image_Path'] %}
+                            <img src="{{ url_for('uploaded_file', filename=post['Image_Path'].split('/')[-1]) }}" 
+                                 alt="Post Image">
+                        {% else %}
+                            <p>No Image</p>
+                        {% endif %}
+                        <p>{{ post['Description'] }}</p>
+                        <p><strong>Likes:</strong> {{ post['Likes'] }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No posts yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+
+</body>
+</html>

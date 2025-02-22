@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add a Recipe - Foodos</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <header>
+        <h1 class="glow">Foodos</h1>
+    </header>
+
+    <div class="container">
+        <h2>Add a New Recipe</h2>
+
+        <form method="post">
+            <label>Recipe Name:</label>
+            <input type="text" name="TranslatedRecipeName" required>
+
+            <label>Ingredients with quantity (comma-separated):</label>
+            <textarea name="TranslatedIngredients" required></textarea>
+
+            <label>Preparation Time (minutes):</label>
+            <input type="number" name="TotalTimeInMins" required>
+
+            <label>Cuisine:</label>
+            <input type="text" name="Cuisine" required>
+
+            <label>Instructions:</label>
+            <textarea name="TranslatedInstructions" required></textarea>
+
+            <label>Image URL:</label>
+            <input type="text" name="image-url">
+
+            <label>Recipe Source URL (optional):</label>
+            <input type="text" name="URL">
+            <label>Ingredient:</label>
+            <input type="text" name="Cleaned-Ingredients">
+            <label>Ingredient Count:</label>
+            <input type="number" name="Ingredient-count" required>
+
+            <button type="submit">Submit Recipe</button>
+        </form>
+
+        <a href="/">
+            <button class="back-btn">Back to Home</button>
+        </a>
+    </div>
+
+</body>
+</html>
